@@ -1,0 +1,46 @@
+> # Load necessary libraries
+> library(readxl)
+> library(dplyr)
+> library(tidyr)
+> library(ggplot2)
+> 
+> # Read the Excel file
+> file_path <- "/Users/nihalthomas/Downloads/Book3.xlsx"
+> data <- read_excel(file_path)
+New names:                                                                                                                  
+• `` -> `...6`
+> 
+> # Rename the unnamed column to "Total" for clarity
+> colnames(data)[ncol(data)] <- "Total"
+> 
+> # Remove rows where any metric has NA
+> data <- data %>% filter(!if_any(everything(), is.na))
+> 
+> # Aggregate the data to calculate the mean for each metric per LLM
+> data_summary <- data %>%
++   group_by(LLM) %>%
++   summarise(
++     Accuracy = mean(Accuracy, na.rm = TRUE),
++     Logical_Consistency = mean(Logical Consistency, na.rm = TRUE),
+Error: unexpected symbol in:
+"    Accuracy = mean(Accuracy, na.rm = TRUE),
+    Logical_Consistency = mean(Logical Consistency"
+>     Efficiency = mean(Efficency, na.rm = TRUE),
+Error: unexpected ',' in "    Efficiency = mean(Efficency, na.rm = TRUE),"
+>     Error_Rate = mean(Error Rate, na.rm = TRUE),
+Error: unexpected symbol in "    Error_Rate = mean(Error Rate"
+>     Total = mean(Total, na.rm = TRUE)
+Error: object 'Total' not found
+>   )
+Error: unexpected ')' in "  )"
+> 
+> # Reshape data to long format for plotting
+> long_data <- pivot_longer(data_summary, cols = c(Accuracy, Logical_Consistency, Efficiency, Error_Rate, Total),
++                           names_to = "Metric", values_to = "Value")
+> 
+> # Create a grouped bar plot including the "Total" column
+> ggplot(long_data, aes(x = Metric, y = Value, fill = LLM)) +
++   geom_bar(stat = "identity", position = "dodge") +
++   labs(title = "Comparison of Metrics Across LLMs", x = "Metric", y = "Value") +
++   theme_minimal() +
++   theme(axis.text.x = element_text(angle = 45, hjust = 1))
