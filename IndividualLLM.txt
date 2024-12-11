@@ -1,0 +1,40 @@
+# Load necessary libraries
+> library(readxl)
+> library(dplyr)
+> library(tidyr)
+> library(ggplot2)
+> 
+> # Read the Excel file
+> file_path <- "/Users/nihalthomas/Downloads/Book3.xlsx"
+> data <- read_excel(file_path)
+New names:                                                                                                                  
+• `` -> `...6`
+> 
+> # Rename the unnamed column to "Total" for clarity
+> colnames(data)[ncol(data)] <- "Total"
+> 
+> # Remove rows where any metric has NA
+> data <- data %>% filter(!if_any(everything(), is.na))
+> 
+> # Filter data for ChatGPT
+> chatgpt_data <- data %>%
++   filter(LLM == "ChatGPT") %>%
++   summarise(
++     Accuracy = mean(Accuracy, na.rm = TRUE),
++     Logical_Consistency = mean(`Logical Consistency`, na.rm = TRUE),
++     Efficiency = mean(Efficency, na.rm = TRUE),
++     Error_Rate = mean(`Error Rate`, na.rm = TRUE),
++     Total = mean(Total, na.rm = TRUE)
++   )
+> 
+> # Reshape ChatGPT data to long format for plotting
+> long_chatgpt_data <- pivot_longer(chatgpt_data, cols = c(Accuracy, Logical_Consistency, Efficiency, Error_Rate, Total),
++                                   names_to = "Metric", values_to = "Value")
+> 
+> # Create a bar plot for ChatGPT
+> ggplot(long_chatgpt_data, aes(x = Metric, y = Value, fill = Metric)) +
++   geom_bar(stat = "identity") +
++   labs(title = "Metrics for ChatGPT", x = "Metric", y = "Value") +
++   theme_minimal() +
++   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
++   scale_fill_brewer(palette = "Set2")
